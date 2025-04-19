@@ -22,15 +22,19 @@ class Todolist extends Component
 
     public function createToDo()
     {
-        // validate input
-        $validated = $this->validateOnly('name');
-        // create todo
-        Todo::create($validated);
-        // clear the input
-        $this->reset('name');
-        // send flash message
-        session()->flash('success', 'Todo created successfully');
-        $this->resetPage();
+        try {
+            // validate input
+            $validated = $this->validateOnly('name');
+            // create todo
+            Todo::create($validated);
+            // clear the input
+            $this->reset('name');
+            // send flash message
+            session()->flash('success', 'Todo created successfully');
+            $this->resetPage();
+        } catch (Exception $e) {
+            session()->flash('error', 'todo create failed');
+        }
     }
 
     public function editTodo($todoId)
@@ -41,12 +45,17 @@ class Todolist extends Component
 
     public function updateTodo()
     {
-        $this->validateOnly('editTodoName');
-        Todo::find($this->editTodoID)->update([
-            'name' => $this->editTodoName,
-        ]);
-        session()->flash('success', 'todo updated successfully');
-        $this->cancle();
+        try {
+            $this->validateOnly('editTodoName');
+            Todo::find($this->editTodoID)->update([
+                'name' => $this->editTodoName,
+            ]);
+            session()->flash('success', 'todo updated successfully');
+            $this->cancle();
+        } catch (Exception $e) {
+            session()->flash('error', 'Todo update failed');
+            return;
+        }
     }
 
     public function cancle()
@@ -56,20 +65,22 @@ class Todolist extends Component
 
     public function toggle($todoId)
     {
-        $todo = Todo::find($todoId);
-        $todo->completed = !$todo->completed;
-        $todo->save();
-        // flash message
-        session()->flash('success', 'Todo');
+        try {
+            $todo = Todo::find($todoId);
+            $todo->completed = !$todo->completed;
+            $todo->save();
+        } catch (Exception $e) {
+            session()->flash('error', 'Todo');
+            return;
+        }
     }
 
     public function delete($todoId)
     {
-        try{
-
+        try {
             Todo::findOrFail($todoId)->delete();
             session()->flash('success', 'Todo deleted successfully');
-        }catch(Exception $e){
+        } catch (Exception $e) {
             session()->flash('error', 'Todo not deleted');
             return;
         }
